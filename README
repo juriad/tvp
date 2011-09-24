@@ -1,0 +1,20 @@
+na zápočťák jsem se dostal až nedávno, jeho implementace závisela na jiném zápočťáku:
+https://github.com/juriad/X2C
+který mi připravil datový model: adresář model
+a taktéž využívá Qt framework
+
+K vlastnímu televiznímu programu:
+načte skoro každý xml soubor, který vyhovuje http://wiki.xmltv.org/index.php/XMLTVFormat
+po načtení se naplní tabbar položkami s datumy, po kliknutí na tab zobrazí televizní program pro daný den.
+Aktuální xmltv televizní program lze stánout na: http://frantisheq.sk/xmltv-page/
+
+Původně měl každý pořad být jeden QWidget, ale to bylo neúnostně pomalé. (progarm na týden obsahuje více jak 19000 pořadů).
+Tak jsem musel jít jednodušší cestou: místo widgetů pořady rovnou kreslit, grafika je tedy primitivní, abych nemusel nic cachovat, anebo vypočítávat, které oblasti se zobrazují a překreslit jen ty. Samotné vypsání názvů pořadů uvnitř odbdélníků zpomalilo scrollování minimálně dvakrát.
+
+Po kliknutí na nějaký pořad se zobrazí jeho detail, který obsahuje mimo jiné i čas a kanál vysílání, který bohužel nelze jinak jednoduše zjistit. Přichytnutí časové osy a seznamu kanálů na hraně okna by mi zabránilo použít QScrollArea a musel bych si tedy posouvání implementovat sám. Zvolil jsem tu jednodussi variantu.
+
+Oproti původnímu návrhu jedné dlouhé stránky tedy není zapotřebí tlačítko nyní; nastavení je statické v souboru keys.cpp.
+
+Záskání: git clone git://github.com/juriad/tvp.git
+Kompilace: qmake && make
+Spuštění: ./tvp
