@@ -74,6 +74,7 @@ void ProgView::setChannels(QList<QString> channelIds, QList<QString> channels) {
 	ProgView::channelIds = channelIds;
 	ProgView::channels = channels;
 	makeChannelBar();
+	repaint();
 }
 
 void ProgView::paintEvent(QPaintEvent *event) {
@@ -131,15 +132,16 @@ void ProgView::paintProgrammes(QPainter& painter, QPaintEvent *event) {
 		int s = getY(start);
 		int min = getKey(CHANNELBAR_HEIGHT).toInt();
 		s = s < min ? min : s;
-		int c = getX(channelIds.indexOf(channel));
-		//painter.fillRect(c + 10, s + 10, getKey(CHANNEL_WIDTH).toInt() - 20,
-		//		getY(stop) - s - 20, Qt::red);
+		int index = channelIds.indexOf(channel);
+		if (index < 0) {
+			continue;
+		}
+		int c = getX(index);
 		QRect full(c, s, getKey(CHANNEL_WIDTH).toInt(), getY(stop) - s);
 		QRect rect = full.adjusted(5, 5, -5, -5);
 		painter.setBrush(Qt::NoBrush);
 		painter.setPen(Qt::black);
 		painter.drawRect(rect);
-		//painter.setClipRect(rect);
 		painter.drawText(rect, prog->getTitleList().at(0)->getValue());
 	}
 }
@@ -153,7 +155,11 @@ void ProgView::mouseReleaseEvent(QMouseEvent * event) {
 		int s = getY(start);
 		int min = getKey(CHANNELBAR_HEIGHT).toInt();
 		s = s < min ? min : s;
-		int c = getX(channelIds.indexOf(channel));
+		int index = channelIds.indexOf(channel);
+		if (index < 0) {
+			continue;
+		}
+		int c = getX(index);
 		QRect full(c, s, getKey(CHANNEL_WIDTH).toInt(), getY(stop) - s);
 		if (full.contains(event->pos())) {
 			qDebug() << "clicked on" << prog->getTitleList().at(0)->getValue();

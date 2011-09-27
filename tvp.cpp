@@ -2,6 +2,7 @@
 
 #include <QtGui>
 #include "keys.h"
+#include "channelsDialog.h"
 
 QSettings *settings;
 
@@ -27,6 +28,13 @@ void TVP::makeMenuBar() {
 	openAct->setStatusTip(tr("Open TV program from file"));
 	connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 	tvProgram->addAction(openAct);
+
+	QAction *sortAct = new QAction(tr("&Sort"), tvProgram);
+	sortAct->setShortcut(Qt::ControlModifier + Qt::Key_S);
+	sortAct->setStatusTip(tr("Sort channels"));
+	connect(sortAct, SIGNAL(triggered()), this, SLOT(sort()));
+	tvProgram->addAction(sortAct);
+
 	QAction *quitAct = new QAction(tr("&Quit"), tvProgram);
 	quitAct->setShortcuts(QKeySequence::Quit);
 	quitAct->setStatusTip(tr("Leave this application"));
@@ -35,33 +43,28 @@ void TVP::makeMenuBar() {
 }
 
 void TVP::fillChannels() {
-	QList<Channel*> channels = tv->getChannelList();
-	TVP::channels.clear();
-	for (int i = 0; i < channels.size(); i++) {
-		TVP::channels.insert(channels.at(i)->getId(), channels.at(i));
+	QList<Channel*> chans = tv->getChannelList();
+	channels.clear();
+	channelIds.clear();
+	QMap<QString, Channel*> channelMap;
+	for (int i = 0; i < chans.size(); i++) {
+		channelMap.insert(chans.at(i)->getId(), chans.at(i));
+		channelIds.append(chans.at(i)->getId());
+		channels.append(chans.at(i)->getDisplayNameList().at(0)->getValue());
 	}
 	QList<Programme*> programmes = tv->getProgrammeList();
 	for (int i = 0; i < programmes.size(); i++) {
-		if (!TVP::channels.contains(programmes.at(i)->getChannel())) {
-			TVP::channels.insert(programmes.at(i)->getChannel(), NULL);
+		QString chan = programmes.at(i)->getChannel();
+		if (!channelMap.contains(chan)) {
+			channelMap.insert(chan, NULL);
+			channelIds.append(chan);
+			channels.append(chan);
 		}
 	}
 }
 
 void TVP::setChannels() {
-	QList<QString> chanIds;
-	QList<QString> chans;
-	for (int i = 0; i < channels.size(); i++) {
-		QString chanId = channels.keys().at(i);
-		chanIds.append(chanId);
-		Channel *chan = channels.value(chanId);
-		if (chan == NULL) {
-			chans.append(chanId);
-		} else {
-			chans.append(chan->getDisplayNameList().at(0)->getValue());
-		}
-	}
-	progView->setChannels(chanIds, chans);
+	progView->setChannels(channelIds, channels);
 	inner->setFixedSize(progView->sizeHint());
 	progView->setFixedSize(progView->sizeHint());
 	progView->layout();
@@ -125,6 +128,22 @@ void TVP::makeUI() {
 	makeMenuBar();
 	makeStatusBar();
 	makeContent();
+}
+
+void TVP::sort() {
+	QMap<QString, QString> map;
+	for (int i = 0; i < channels.size(); i++) {
+		map.insert(channels.at(i), channelIds.at(i));
+	}
+	ChannelsDialog dialog(this, channels);
+	if (dialog.exec() == QDialog::Accepted) {
+		channels = dialog.getChannels();
+	}
+	channelIds.clear();
+	for (int i = 0; i < channels.size(); i++) {
+		channelIds.append(map.value(channels.at(i)));
+	}
+	setChannels();
 }
 
 void TVP::open() {

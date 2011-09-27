@@ -5,7 +5,6 @@
 #include "model/Tv.h"
 #include "progView.h"
 
-
 class TVP: public QMainWindow {
 Q_OBJECT
 
@@ -15,12 +14,14 @@ public:
 
 private slots:
 	void open();
+	void sort();
 	void quit();
 	void setContent();
 
 private:
-	QHash<QString, Channel*> channels;
+	QList<QString> channels;
 	Tv *tv;
+	QList<QString> channelIds;
 	QList<QDate> days;
 	QTabBar *tabBar;
 	QWidget *inner;
